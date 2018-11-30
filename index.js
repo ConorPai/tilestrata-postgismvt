@@ -61,7 +61,7 @@ module.exports = function(options) {
 				query = `
 					SELECT ST_AsMVT(q, '${tile.layer}', ${resolution}, 'geom') AS mvt FROM (
 						WITH ${agg_q_name} AS (
-							SELECT 1 cnt, ST_AsMVTGeom(ST_Transform(${lyr.table}.${lyr.geometry}, 3857), TileBBox(${tile.z}, ${tile.x}, ${tile.y}, 3857), ${resolution}, ${lyr.buffer}, ${clip_geom}) geom
+							SELECT 1 cnt, ST_AsMVTGeom(ST_Transform(${lyr.table}.${lyr.geometry}, ${lyr.srid}), TileBBox(${tile.z}, ${tile.x}, ${tile.y}, ${lyr.srid}), ${resolution}, ${lyr.buffer}, ${clip_geom}) geom
 							FROM ${lyr.table}
 							WHERE ST_Intersects(TileBBox(${tile.z}, ${tile.x}, ${tile.y}, ${lyr.srid}), ${lyr.table}.${lyr.geometry})
 						)
@@ -83,7 +83,7 @@ module.exports = function(options) {
 				query = `
 				SELECT ST_AsMVT(q, '${tile.layer}', ${resolution}, 'geom') AS mvt FROM (
 					WITH ${agg_q_name} AS (
-						SELECT 1 cnt, ST_AsMVTGeom(ST_Transform(${lyr.table}.${lyr.geometry}, 3857), TileBBox(${tile.z}, ${tile.x}, ${tile.y}, 3857), ${resolution}, ${lyr.buffer}, ${clip_geom}) geom ${fields}
+						SELECT 1 cnt, ST_AsMVTGeom(ST_Transform(${lyr.table}.${lyr.geometry}, ${lyr.srid}), TileBBox(${tile.z}, ${tile.x}, ${tile.y}, ${lyr.srid}), ${resolution}, ${lyr.buffer}, ${clip_geom}) geom ${fields}
 						FROM ${lyr.table}
 						WHERE ST_Intersects(TileBBox(${tile.z}, ${tile.x}, ${tile.y}, ${lyr.srid}), ${lyr.table}.${lyr.geometry})
 					)
@@ -99,8 +99,8 @@ module.exports = function(options) {
 						SELECT ST_AsMVT(q, '${tile.layer}', ${resolution}, 'geom') AS mvt FROM (
                             WITH a AS (
 							SELECT ST_AsMVTGeom(
-                                ST_Transform(${lyr.table}.${lyr.geometry}, 3857),
-                                TileBBox(${tile.z}, ${tile.x}, ${tile.y}, 3857),
+                                ST_Transform(${lyr.table}.${lyr.geometry}, ${lyr.srid}),
+                                TileBBox(${tile.z}, ${tile.x}, ${tile.y}, ${lyr.srid}),
                                 ${resolution},
                                 ${lyr.buffer},
                                 ${clip_geom} ) geom ${fields}

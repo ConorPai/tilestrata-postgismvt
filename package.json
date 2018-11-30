@@ -1,13 +1,13 @@
 {
-  "name": "tilestrata-postgismvt",
-  "version": "0.0.3",
+  "name": "@conorpai/tilestrata-postgismvt",
+  "version": "0.0.4",
   "description": "A TileStrata plugin for reading Mapbox Vector Tiles from a PostGIS database",
-  "author": "Stefan Zimmer <stefan.zimmer_shb@t-online.de>",
+  "author": "ConorPai",
   "license": "Apache-2.0",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Stezii/tilestrata-postgismvt.git"
+    "url": "https://github.com/ConorPai/tilestrata-postgismvt.git"
   },
   "keywords": [
     "tilestrata",
@@ -19,17 +19,20 @@
     "PostGIS"
   ],
   "bugs": {
-    "url": "https://github.com/Stezii/tilestrata-postgismvt/issues"
+    "url": "https://github.com/ConorPai/tilestrata-postgismvt/issues"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "homepage": "https://github.com/Stezii/tilestrata-postgismvt",
+  "homepage": "https://github.com/ConorPai/tilestrata-postgismvt",
   "dependencies": {
     "pg": "^6.1.2",
     "sql-template-strings": "^2.2.2"
   },
   "peerDependencies": {
     "tilestrata": "^2.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
