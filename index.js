@@ -23,7 +23,7 @@ module.exports = function(options) {
 			err.statusCode = 500;
 			callback(err);
 		});
-		if ((lyr.mode === 'cluster' || lyr.mode === 'cluster_fields' || (typeof lyr.mode === 'function')) && lyr.type != 'circle') {
+		if ((lyr.mode === 'cluster' || lyr.mode === 'cluster_aio' || lyr.mode === 'cluster_fields' || (typeof lyr.mode === 'function')) && lyr.type != 'circle') {
 			var err = new Error('Clustering and mode functions can only be used in conjunction with point data');
 			err.statusCode = 422;
 			callback(err);
@@ -68,6 +68,22 @@ module.exports = function(options) {
 						SELECT COUNT(${agg_q_name}.cnt), ${agg_q_name}.geom
 						FROM ${agg_q_name}
 						GROUP BY ${agg_q_name}.geom
+					) AS q
+				`;
+				break;
+
+			case "cluster_aio":
+				var agg_q_name = 'mvt_geo';
+				query = `
+					SELECT ST_AsMVT(q, '${tile.layer}', ${resolution}, 'geom') AS mvt FROM (
+						WITH ${agg_q_name} AS (
+							SELECT 1 cnt, ${lyr.table}.${lyr.geometry} geom
+							FROM ${lyr.table}
+							WHERE ST_Intersects(TileBBox(${tile.z}, ${tile.x}, ${tile.y}, ${lyr.srid}), ${lyr.table}.${lyr.geometry})
+						)
+						SELECT COUNT(${agg_q_name}.cnt), ST_AsMVTGeom(ST_Centroid(ST_Extent(${agg_q_name}.geom)), TileBBox(${tile.z}, ${tile.x}, ${tile.y}, ${lyr.srid}), ${resolution}, ${lyr.buffer}, ${clip_geom}) geom
+						FROM ${agg_q_name}
+						GROUP BY cnt
 					) AS q
 				`;
 				break;
