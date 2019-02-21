@@ -87,7 +87,24 @@ module.exports = function(options) {
 					) AS q
 				`;
 				break;
-
+			
+			case "to_point":
+				query = `
+					SELECT ST_AsMVT(q, '${tile.layer}', ${resolution}, 'geom') AS mvt FROM (
+						WITH a AS (
+						SELECT ST_AsMVTGeom(
+							ST_Transform(ST_Centroid(${lyr.table}.${lyr.geometry}), ${lyr.srid}),
+							TileBBox(${tile.z}, ${tile.x}, ${tile.y}, ${lyr.srid}),
+							${resolution},
+							${lyr.buffer},
+							${clip_geom} ) geom ${fields}
+						FROM ${lyr.table}
+						WHERE ST_Intersects(TileBBox(${tile.z}, ${tile.x}, ${tile.y}, ${lyr.srid}), ${lyr.table}.${lyr.geometry})
+						)
+						SELECT * FROM a WHERE geom IS NOT NULL
+					) AS q
+				`;
+				break;
 			case "cluster_fields":
 				var agg_q_name = 'mvt_geo';
 				var fieldsAgg = '';

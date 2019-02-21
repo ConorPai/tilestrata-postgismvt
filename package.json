@@ -1,6 +1,6 @@
 {
   "name": "@conorpai/tilestrata-postgismvt",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A TileStrata plugin for reading Mapbox Vector Tiles from a PostGIS database",
   "author": "ConorPai",
   "license": "Apache-2.0",
