@@ -127,6 +127,23 @@ module.exports = function(options) {
 				`;
 				break;
 
+			case "simplify":
+					query = `
+						SELECT ST_AsMVT(q, '${tile.layer}', ${resolution}, 'geom') AS mvt FROM (
+														WITH a AS (
+							SELECT ST_AsMVTGeom(
+																ST_SimplifyPreserveTopology(ST_Transform(${lyr.table}.${lyr.geometry}, ${lyr.srid}), 2 * 1.40625 / pow(2, ${tile.z})),
+																TileBBox(${tile.z}, ${tile.x}, ${tile.y}, ${lyr.srid}),
+																${resolution},
+																${lyr.buffer},
+																${clip_geom} ) geom ${fields}
+							FROM ${lyr.table}
+							WHERE ST_Intersects(TileBBox(${tile.z}, ${tile.x}, ${tile.y}, ${lyr.srid}), ${lyr.table}.${lyr.geometry})
+														)
+														SELECT * FROM a WHERE geom IS NOT NULL
+						) AS q
+					`;
+				break;
 				default:
 					query = `
 						SELECT ST_AsMVT(q, '${tile.layer}', ${resolution}, 'geom') AS mvt FROM (
