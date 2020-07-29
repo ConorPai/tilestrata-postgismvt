@@ -18,7 +18,7 @@ module.exports = function(options) {
 		lyr = options.lyr;
 		pgPool = new pg.Pool(options.pgConfig);
 		pgPool.on('error', function (err, client) {
-		  console.error(err.message, err.stack);
+			console.error(err.message, err.stack);
 			var err = new Error('idle client error');
 			err.statusCode = 500;
 			callback(err);
@@ -87,7 +87,7 @@ module.exports = function(options) {
 					) AS q
 				`;
 				break;
-			
+
 			case "to_point":
 				query = `
 					SELECT ST_AsMVT(q, '${tile.layer}', ${resolution}, 'geom') AS mvt FROM (
@@ -128,7 +128,7 @@ module.exports = function(options) {
 				break;
 
 			case "simplify":
-					query = `
+				query = `
 						SELECT ST_AsMVT(q, '${tile.layer}', ${resolution}, 'geom') AS mvt FROM (
 														WITH a AS (
 							SELECT ST_AsMVTGeom(
@@ -144,8 +144,26 @@ module.exports = function(options) {
 						) AS q
 					`;
 				break;
-				default:
-					query = `
+
+			case "bylevel":
+				query = `
+						SELECT ST_AsMVT(q, '${tile.layer}', ${resolution}, 'geom') AS mvt FROM (
+                            WITH a AS (
+							SELECT ST_AsMVTGeom(
+                                ST_Transform(${lyr.table}_${tile.z}.${lyr.geometry}, ${lyr.srid}),
+                                TileBBox(${tile.z}, ${tile.x}, ${tile.y}, ${lyr.srid}),
+                                ${resolution},
+                                ${lyr.buffer},
+                                ${clip_geom} ) geom ${fields}
+							FROM ${lyr.table}_${tile.z}
+							WHERE ST_Intersects(TileBBox(${tile.z}, ${tile.x}, ${tile.y}, ${lyr.srid}), ${lyr.table}_${tile.z}.${lyr.geometry})
+                            )
+                            SELECT * FROM a WHERE geom IS NOT NULL
+						) AS q
+					`;
+				break;
+			default:
+				query = `
 						SELECT ST_AsMVT(q, '${tile.layer}', ${resolution}, 'geom') AS mvt FROM (
                             WITH a AS (
 							SELECT ST_AsMVTGeom(
@@ -160,7 +178,7 @@ module.exports = function(options) {
                             SELECT * FROM a WHERE geom IS NOT NULL
 						) AS q
 					`;
-					break;
+				break;
 		}
 
 		pgPool.query(query, function(err, result) {
@@ -175,17 +193,17 @@ module.exports = function(options) {
 				err.statusCode = 204;
 				return callback(err);
 			}
-            zlib.gzip(result.rows[0].mvt, function(err, result) {
-                if (!err) {
-                    callback(null, result, {'Content-Type': 'application/x-protobuf', 'Content-Encoding': 'gzip'});
-                }
-            });
+			zlib.gzip(result.rows[0].mvt, function(err, result) {
+				if (!err) {
+					callback(null, result, {'Content-Type': 'application/x-protobuf', 'Content-Encoding': 'gzip'});
+				}
+			});
 		});
 	}
 
 	return {
 		name: 'postgismvt',
-    init: initialize,
+		init: initialize,
 		serve: serveMVT
 	};
 };
